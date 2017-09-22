@@ -41,7 +41,7 @@ App.prototype.build = function() {
     });
     var reducer = redux_1.combineReducers(rs);
     var store = this.store = redux_1.createStore(reducer);
-    var dispatch = function(obj) {
+    var dispatch = async function(obj) {
         var _a = obj.type.split('/'),
             name = _a[0],
             func = _a[1];
@@ -53,18 +53,12 @@ App.prototype.build = function() {
         if (typeof reducer === 'function') {
             var rst = reducer(__assign({}, obj, { type: func }));
             if (rst instanceof Promise) {
-                rst.then(function(r) {
-                    store.dispatch({
-                        type: name,
-                        newState: r
-                    });
-                });
-            } else {
-                store.dispatch({
-                    type: name,
-                    newState: rst
-                });
+                rst = await rst;
             }
+            await store.dispatch({
+                type: name,
+                newState: rst
+            });
         }
     };
     return {

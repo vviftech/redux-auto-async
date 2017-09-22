@@ -42,7 +42,7 @@ class App {
 
 		let store = this.store = createStore(reducer);
 
-		let dispatch = function(obj:IAction){
+		let dispatch =async function(obj:IAction){
 			let [name,func] = obj.type.split('/');
 			let model = me.models.filter(m=>m.name === name)[0];
 			if(!model){
@@ -55,23 +55,18 @@ class App {
 					type:func
 				});
 				if(rst instanceof Promise){
-					rst.then(r=>{
-						store.dispatch({
-							type:name,
-							newState :r
-						})
-					});
-				}else{
-					store.dispatch({
-						type:name,
-						newState : rst
-					});
+					rst = await rst;
 				}
+				store.dispatch({
+					type:name,
+					newState : rst
+				});
 			}
 		}
 
 		return {
-			dispatch:dispatch
+			dispatch:dispatch,
+			store:store
 		}
 	}
 
@@ -80,7 +75,8 @@ class App {
 
 interface IAsync{
 	//connect:(mapStateToProps?:(state:object)=>object,mapDispatchToProps?:(obj:{dispatch:(obj:IAction)=>void})=>object)=>(component:any)=>any,
-	dispatch?:any
+	dispatch?:any,
+	store?:any
 }
 
 
